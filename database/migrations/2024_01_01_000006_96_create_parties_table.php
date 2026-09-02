@@ -8,13 +8,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('contract_parties', function (Blueprint $table) {
+        // A reusable directory of counterparties (vendors, clients,
+        // individuals) an org deals with repeatedly -- selectable when
+        // drafting a contract instead of re-typing the same vendor's
+        // details every time.
+        Schema::create('parties', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('organization_id')->constrained()->cascadeOnDelete();
-            $table->foreignUuid('contract_id')->constrained()->cascadeOnDelete();
-            $table->foreignUuid('party_id')->nullable()->constrained('parties')->nullOnDelete();
             $table->string('name');
-            $table->string('role')->default('counterparty'); // counterparty | vendor | client | guarantor
+            $table->string('type')->default('organization'); // organization | individual | vendor | client
             $table->string('contact_email')->nullable();
             $table->string('contact_phone')->nullable();
             $table->timestamps();
@@ -23,6 +25,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('contract_parties');
+        Schema::dropIfExists('parties');
     }
 };
