@@ -37,10 +37,15 @@
 <body>
     <header>
         <span class="org">{{ $organization->name ?? 'Kandarasi' }}</span>
-        <form class="logout" method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit">Sign out</button>
-        </form>
+        <nav style="display:flex; align-items:center; gap:1.25rem;">
+            <a href="{{ route('contracts.index') }}" style="color:#fff; text-decoration:none; font-size:0.9rem;">Contracts</a>
+            <a href="{{ route('invitations.index') }}" style="color:#fff; text-decoration:none; font-size:0.9rem;">Team</a>
+            <a href="{{ route('settings.index') }}" style="color:#fff; text-decoration:none; font-size:0.9rem;">Settings</a>
+            <form class="logout" method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit">Sign out</button>
+            </form>
+        </nav>
     </header>
 
     <main>
