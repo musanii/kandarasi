@@ -206,6 +206,58 @@ Route::domain('{organization}.kandarasi.test')
     });
 ```
 
+## Settings: contract types, departments/units, party directory
+
+Three things that were previously hardcoded or purely-manual are now real,
+org-scoped CRUD, under `/settings`:
+
+- **Contract types** — no longer a hardcoded `Rule::in([...])` enum;
+  `contract_types` is a per-organization table. Both the seeder and
+  self-serve signup pre-populate the original five (MOU, Supplies,
+  Agreement, Services, SLA) so a new org isn't staring at an empty dropdown,
+  but any org can rename/add/remove its own.
+- **Departments/units** — `OrganizationUnitController` gives org admins a
+  UI to manage these directly, rather than only being seedable.
+- **Party directory** — `parties` is a reusable directory of vendors/
+  clients/counterparties. `contract_parties` now has an optional `party_id`
+  — selecting from the directory **snapshots** that party's current details
+  onto the contract at creation time (so a later edit to the directory entry
+  doesn't silently rewrite history on an already-signed contract), or you
+  can still type a one-off party inline if it's not worth adding to the
+  directory.
+
+**Currency is now worldwide**, not KES-only — `App\Support\Currencies`
+holds a curated set of major global/regional currencies (extend the list as
+needed; it's not the full ISO 4217 set of 180+, just a practical working
+subset), used in both the contract form and `ContractRequest` validation.
+
+**A pattern worth knowing going forward:** the `ContractController::show()`
+implicit-binding bug means new controllers here (`ContractTypeController`,
+`OrganizationUnitController`, `PartyController`) all use explicit
+`Model::findOrFail($id)` lookups instead of type-hinted route-model-binding,
+deliberately, until the root cause of that bug is actually found and fixed.
+
+## Contracts
+
+`ContractController` (index, create, store, show), `ContractRequest`
+(validates against the organization's own `contract_types`/
+`organization_units`/`parties`, enforces `expiry_date` on/after
+`effective_date`, accepts nested `parties[]` — either a `party_id` from the
+directory or an ad-hoc name), and matching views. Contract creation and its
+parties are wrapped in a single DB transaction. Routes are registered in
+`routes/tenant.php` alongside dashboard/team/settings.
+
+The `show` view surfaces parties, workflow steps (if a `WorkflowProcess`
+exists — creating one automatically on submission, rather than requiring a
+separate step, is a reasonable next addition), and case logs — but doesn't
+yet let you drive the approval workflow forward (approve/reject a step) or
+attach documents. Both are natural next pieces.
+
+**Fields worth considering adding next** (flagged, not yet built): a
+human-readable contract reference/number, an auto-renew flag, a risk/
+priority level, and document attachment upload (the `contract_documents`
+table already exists in the schema — no controller/UI yet).
+
 ## Still not built
 
 - **Platform Admin** — a separate NexCore-staff-only panel (own auth guard,
@@ -216,8 +268,12 @@ Route::domain('{organization}.kandarasi.test')
   the actual email doesn't yet.
 - **Trial-to-paid conversion** — nothing currently happens when
   `current_period_ends_at` passes.
-- **Contract CRUD itself** — dashboard reads `Contract` rows but nothing yet
-  creates one through the UI.
+- **Driving the workflow forward** — approving/rejecting a step, document
+  upload/signature routing, procurement/tender UI (the backend models exist,
+  no controllers/views yet).
+- **External/guest collaborator access on a single contract** — under
+  discussion, not yet designed. See the conversation for the two candidate
+  approaches (full guest user account vs. token-based scoped access).
 
 ## What's here
 

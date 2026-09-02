@@ -12,7 +12,8 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('organization_id')->constrained()->cascadeOnDelete();
             $table->string('title');
-            $table->string('type');       // MOU | Supplies | Agreement | Services | SLA
+            $table->foreignUuid('contract_type_id')->constrained('contract_types');
+            $table->text('description')->nullable();
             $table->foreignUuid('organization_unit_id')->nullable()->constrained('organization_units')->nullOnDelete();
             $table->string('status')->default('drafting');
             // drafting | pending_approval | negotiating | approved | active | pending_renewal | expired

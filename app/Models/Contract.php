@@ -15,7 +15,7 @@ class Contract extends Model
     use HasUuids, BelongsToOrganization;
 
     protected $fillable = [
-        'organization_id', 'title', 'type', 'organization_unit_id', 'status',
+        'organization_id', 'title', 'contract_type_id', 'description', 'organization_unit_id', 'status',
         'value', 'currency', 'effective_date', 'expiry_date', 'created_by_user_id',
     ];
 
@@ -23,6 +23,11 @@ class Contract extends Model
         'effective_date' => 'date',
         'expiry_date' => 'date',
     ];
+
+    public function contractType(): BelongsTo
+    {
+        return $this->belongsTo(ContractType::class);
+    }
 
     public function organizationUnit(): BelongsTo
     {

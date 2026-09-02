@@ -12,6 +12,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('organization_id')->constrained()->cascadeOnDelete();
             $table->foreignUuid('contract_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('party_id')->nullable()->constrained('parties')->nullOnDelete();
             $table->string('name');
             $table->string('role')->default('counterparty'); // counterparty | vendor | client | guarantor
             $table->string('contact_email')->nullable();
