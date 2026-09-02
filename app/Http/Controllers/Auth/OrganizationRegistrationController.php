@@ -46,6 +46,15 @@ class OrganizationRegistrationController extends Controller
                 'current_period_ends_at' => now()->addDays(14),
             ]);
 
+            // A brand-new org needs at least a starting set of contract
+            // types, or the "create contract" form is a dead end on day one.
+            foreach (['MOU', 'Supplies', 'Agreement', 'Services', 'SLA'] as $typeName) {
+                \App\Models\ContractType::create([
+                    'organization_id' => $organization->id,
+                    'name' => $typeName,
+                ]);
+            }
+
             $user = User::create([
                 'organization_id' => $organization->id,
                 'name' => $validated['name'],
